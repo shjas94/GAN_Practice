@@ -3,9 +3,9 @@
 ## 📖 Reference
 * [GAN](https://arxiv.org/pdf/1406.2661v1.pdf)
 * [DCGAN](https://arxiv.org/pdf/1511.06434v2.pdf)
+* [WassersteinGAN](https://arxiv.org/pdf/1701.07875v3.pdf)
 
 ## 📃 ToDo List
-* [WassersteinGAN](https://arxiv.org/pdf/1701.07875v3.pdf)
 * [StyleGAN](https://arxiv.org/pdf/1812.04948v3.pdf)
 * [StarGAN](https://arxiv.org/pdf/1711.09020v3.pdf)
 * [SAGAN](https://arxiv.org/pdf/1805.08318v2.pdf)

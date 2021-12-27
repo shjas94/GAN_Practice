@@ -14,7 +14,7 @@ def load_mnist(is_train=True):
     return x, y
 
 
-def load_cifarten(is_train=True):
+def load_cifar10(is_train=True):
     dataset = datasets.CIFAR10(
         './cifar_10',
         train=is_train,
@@ -25,7 +25,7 @@ def load_cifarten(is_train=True):
     return x, y
 
 
-def load_cifarhundred(is_train=True):
+def load_cifar100(is_train=True):
     dataset = datasets.CIFAR100(
         './cifar_100',
         train=is_train,

@@ -12,8 +12,8 @@ from utils import *
 
 def train_one_epoch(cfg, device, epoch, generator, discriminator, train_loader, criterion, optimizer_g, optimizer_d):
     f'''
-    follows standard training procedure of Vanilla GAN
-    k-steps for Discriminator and I used k=1
+    follows standard training procedure of Vanilla GAN / Wasserstein GAN
+    k-steps for Discriminator k=1 for the implementation
 
     '''
     generator.train()
@@ -25,21 +25,35 @@ def train_one_epoch(cfg, device, epoch, generator, discriminator, train_loader, 
         Real = torch.ones(imgs.shape[0], requires_grad=False).to(device)
         Fake = torch.zeros(imgs.shape[0], requires_grad=False).to(device)
         imgs = imgs.to(device)
-        z = torch.normal(0, 1, (imgs.shape[0], cfg.input_dim)).to(device)
-        generated_imgs = generator(z)
 
         # Train Discriminator
         for d_iter in range(cfg.discriminator_iteration):
+            z = torch.normal(0, 1, (imgs.shape[0], cfg.input_dim)).to(device)
+            generated_imgs = generator(z)
             optimizer_d.zero_grad()
-            real_loss = criterion(discriminator(imgs), Real)
-            fake_loss = criterion(discriminator(generated_imgs.detach()), Fake)
-            d_loss = real_loss + fake_loss
-            d_loss.backward()
-            optimizer_d.step()
+            if cfg.model_name == "DCGAN":
+                real_loss = criterion(discriminator(imgs), Real)
+                fake_loss = criterion(discriminator(
+                    generated_imgs.detach()), Fake)
+                d_loss = real_loss + fake_loss
+                d_loss.backward()
+                optimizer_d.step()
+            elif cfg.model_name == "WGAN":
+                d_loss = -torch.mean(discriminator(imgs)) + \
+                    torch.mean(discriminator(generated_imgs.detach()))
+                d_loss.backward()
+                optimizer_d.step()
+                for p in discriminator.parameters():
+                    p.data.clamp_(-cfg.clip_value, cfg.clip_value)
 
         # Train Generator
+        z = torch.normal(0, 1, (imgs.shape[0], cfg.input_dim)).to(device)
+        generated_imgs = generator(z)
         optimizer_g.zero_grad()
-        g_loss = criterion(discriminator(generated_imgs), Real)
+        if cfg.model_name == "DCGAN":
+            g_loss = criterion(discriminator(generated_imgs), Real)
+        elif cfg.model_name == "WGAN":
+            g_loss = -torch.mean(discriminator(generated_imgs))
         g_loss.backward()
         optimizer_g.step()
 
@@ -55,15 +69,22 @@ def valid_one_epoch(cfg, device, epoch, generator, discriminator, val_loader, cr
         val_loader), position=0, leave=True)
     g_loss = None
     for iter, (imgs, _) in pbar:
-        Real = torch.ones(imgs.shape[0], requires_grad=False).to(device)
-        Fake = torch.zeros(imgs.shape[0], requires_grad=False).to(device)
         imgs = imgs.to(device)
         z = torch.normal(0, 1, (imgs.shape[0], cfg.input_dim)).to(device)
         generated_imgs = generator(z)
-        real_loss = criterion(discriminator(imgs), Real)
-        fake_loss = criterion(discriminator(generated_imgs.detach()), Fake)
-        d_loss = real_loss + fake_loss
-        g_loss = criterion(discriminator(generated_imgs), Real)
+        if cfg.model_name == "DCGAN":
+            Real = torch.ones(imgs.shape[0], requires_grad=False).to(device)
+            Fake = torch.zeros(imgs.shape[0], requires_grad=False).to(device)
+            real_loss = criterion(discriminator(imgs), Real)
+            fake_loss = criterion(discriminator(generated_imgs.detach()), Fake)
+            d_loss = real_loss + fake_loss
+            g_loss = criterion(discriminator(generated_imgs), Real)
+
+        elif cfg.model_name == "WGAN":
+            d_loss = -torch.mean(discriminator(imgs)) + \
+                torch.mean(discriminator(generated_imgs))
+            g_loss = -torch.mean(discriminator(generated_imgs))
+
         valid_description = f"Valid Epoch : {epoch}, Discriminator Loss : {d_loss.item(): .6f}, Generator Loss : {g_loss.item(): .6f}"
         pbar.set_description(valid_description)
     return g_loss.item()
@@ -106,19 +127,22 @@ def main(cfg):
     else:
         print("need to implement custom dataset/loader")
         return
-
     criterion = nn.BCELoss()
-
     generator = Generator(cfg.input_dim, cfg.expanded_dim,
                           (cfg.img_size))
     discriminator = Discriminator(num_classes)
     generator.apply(weights_init_normal)
     discriminator.apply(weights_init_normal)
 
-    optimizer_g = torch.optim.Adam(
-        generator.parameters(), lr=cfg.lr, eps=1e-04, betas=[0.5, 0.999])
-    optimizer_d = torch.optim.Adam(
-        discriminator.parameters(), lr=cfg.lr, eps=1e-04, betas=[0.5, 0.999])
+    if cfg.model_name == "DCGAN":
+        optimizer_g = torch.optim.Adam(
+            generator.parameters(), lr=cfg.lr, eps=1e-04, betas=[0.5, 0.999])
+        optimizer_d = torch.optim.Adam(
+            discriminator.parameters(), lr=cfg.lr, eps=1e-04, betas=[0.5, 0.999])
+    elif cfg.model_name == "WGAN":
+        optimizer_g = torch.optim.RMSprop(generator.parameters(), lr=cfg.lr)
+        optimizer_d = torch.optim.RMSprop(
+            discriminator.parameters(), lr=cfg.lr)
 
     train_loader, val_loader = get_train_valid_loader(cfg)
     best_model = trainer(cfg, generator, discriminator,
@@ -128,6 +152,8 @@ def main(cfg):
 
 if __name__ == "__main__":
     gan_parser = argparse.ArgumentParser()
+    gan_parser.add_argument("--model_name", type=str, default="DCGAN",
+                            help="Name of GAN Architecture\n(DCGAN\nWGAN\nWGAN-GP)")
     gan_parser.add_argument("--dataset_name", type=str,
                             default="cifar-10", help="Name of Dataset")
     gan_parser.add_argument("--train_size", type=float,
@@ -138,6 +164,9 @@ if __name__ == "__main__":
                             default=16, help="size of train batches")
     gan_parser.add_argument("--test_batch_size", type=int,
                             default=16, help="size of test batches")
+    gan_parser.add_argument("--clip_value", type=float, default=0.01,
+                            help="values for clipping parameters of Discriminator to enforce a\
+                            Lipschitz constant (requires only for WGAN)")
     gan_parser.add_argument("--seed", type=int, default=42, help="Random seed")
     gan_parser.add_argument("--epoch", type=int, default=100)
     gan_parser.add_argument("--input_dim", type=int, default=100)

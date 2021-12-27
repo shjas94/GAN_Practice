@@ -11,9 +11,9 @@ def get_train_valid_loader(cfg):
     if dataset_name == 'mnist':
         x, y = load_mnist(is_train=True)
     elif dataset_name == "cifar-10":
-        x, y = load_cifarten(is_train=True)
+        x, y = load_cifar10(is_train=True)
     elif dataset_name == "cifar-100:":
-        x, y = load_cifarhundred(is_train=True)
+        x, y = load_cifar100(is_train=True)
     elif dataset_name == "imagenet":
         x, y = load_imagenet(is_train=True)
     else:
@@ -33,12 +33,12 @@ def get_train_valid_loader(cfg):
     ).split([train_cnt, valid_cnt], dim=0)
 
     train_loader = DataLoader(
-        dataset=PredefinedDataset(train_x, train_y, cfg.img_size),
+        dataset=PredefinedDataset(train_x, train_y, img_size),
         batch_size=batch_size,
         shuffle=True
     )
     valid_loader = DataLoader(
-        dataset=PredefinedDataset(valid_x, valid_y, cfg.img_size),
+        dataset=PredefinedDataset(valid_x, valid_y, img_size),
         batch_size=batch_size,
         shuffle=True
     )
@@ -53,9 +53,9 @@ def get_test_loader(cfg):
     if dataset_name == 'mnist':
         x, y = load_mnist(img_size, is_train=False)
     elif dataset_name == 'cifar-10':
-        x, y = load_cifarten(img_size, is_train=False)
+        x, y = load_cifar10(img_size, is_train=False)
     elif dataset_name == 'cifar-100':
-        x, y = load_cifarhundred(img_size, is_train=False)
+        x, y = load_cifar100(img_size, is_train=False)
     elif dataset_name == 'imagenet':
         x, y = load_imagenet(img_size, is_train=False)
     else:
