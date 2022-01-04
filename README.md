@@ -17,29 +17,16 @@
 ├── Modules
 │   ├── Discriminator.py
 │   ├── Generator.py
-│   ├── __init__.py
-│   └── __pycache__
-│       ├── Discriminator.cpython-37.pyc
-│       ├── Generator.cpython-37.pyc
-│       └── __init__.cpython-37.pyc
+│   └── __init__.py
 ├── README.md
 ├── data
 │   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-37.pyc
-│   │   ├── dataloader.cpython-37.pyc
-│   │   └── dataset.cpython-37.pyc
 │   ├── dataloader.py
 │   └── dataset.py
 ├── main.py
 ├── models
 └── utils
     ├── __init__.py
-    ├── __pycache__
-    │   ├── __init__.cpython-37.pyc
-    │   ├── losses.cpython-37.pyc
-    │   ├── optimizers.cpython-37.pyc
-    │   └── utils.cpython-37.pyc
     ├── losses.py
     ├── optimizers.py
     └── utils.py
