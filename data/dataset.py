@@ -3,17 +3,6 @@ from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 
 
-def load_mnist(is_train=True):
-    dataset = datasets.MNIST(
-        './mnist',
-        train=is_train,
-        download=True
-    )
-    x = dataset.data
-    y = dataset.targets
-    return x, y
-
-
 def load_cifar10(is_train=True):
     dataset = datasets.CIFAR10(
         './cifar_10',

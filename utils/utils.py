@@ -1,8 +1,8 @@
 import os
-from posixpath import dirname
 import random
 import numpy as np
 import torch
+from .losses import *
 
 
 def seed_everything(seed):

@@ -2,22 +2,19 @@ import torch.nn as nn
 
 
 class BasicBlock(nn.Module):
-    def __init__(self, in_channel, out_channel, kernel_size, stride, projection=False):
+    def __init__(self, in_channel, out_channel, kernel_size, stride):
         super(BasicBlock, self).__init__()
         self.padding = (kernel_size - 1) // 2
         self.conv = nn.Conv2d(in_channel, out_channel,
                               kernel_size, stride, self.padding)
         self.batchnorm = nn.BatchNorm2d(out_channel)
-        self.leaky_relu = nn.LeakyReLU(inplace=True)
-        self.projection = nn.Conv2d(
-            in_channel, out_channel, 1, stride) if projection else None
+        self.leaky_relu = nn.LeakyReLU(inplace=True, negative_slope=0.2)
 
     def forward(self, x):
         out = self.conv(x)
         out = self.batchnorm(out)
         out = self.leaky_relu(out)
-        projected_x = self.projection(x) if self.projection else x
-        return projected_x + out
+        return out
 
 
 class Discriminator(nn.Module):
@@ -25,12 +22,12 @@ class Discriminator(nn.Module):
     |input| = (B x 3 x 64 x 64)
     '''
 
-    def __init__(self, num_classes):
+    def __init__(self):
         super(Discriminator, self).__init__()
-        self.block1 = BasicBlock(3, 128, 3, 2, True)
-        self.block2 = BasicBlock(128, 256, 3, 2, True)
-        self.block3 = BasicBlock(256, 512, 3, 2, True)
-        self.block4 = BasicBlock(512, 1024, 3, 2, True)
+        self.block1 = BasicBlock(3, 128, 3, 2)
+        self.block2 = BasicBlock(128, 256, 3, 2)
+        self.block3 = BasicBlock(256, 512, 3, 2)
+        self.block4 = BasicBlock(512, 1024, 3, 2)
         self.gap = nn.AdaptiveAvgPool2d(1)
         self.linear = nn.Linear(1024, 1)
         self.sigmoid = nn.Sigmoid()
@@ -42,4 +39,4 @@ class Discriminator(nn.Module):
         out = self.block4(out)
         out = self.gap(out).squeeze()
         out = self.linear(out)
-        return self.sigmoid(out).squeeze()
+        return self.sigmoid(out)

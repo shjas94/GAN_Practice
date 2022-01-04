@@ -8,9 +8,8 @@ def get_train_valid_loader(cfg):
     img_size = cfg.img_size
     batch_size = cfg.batch_size
     train_size = cfg.train_size
-    if dataset_name == 'mnist':
-        x, y = load_mnist(is_train=True)
-    elif dataset_name == "cifar-10":
+
+    if dataset_name == "cifar-10":
         x, y = load_cifar10(is_train=True)
     elif dataset_name == "cifar-100:":
         x, y = load_cifar100(is_train=True)
@@ -49,10 +48,7 @@ def get_test_loader(cfg):
     dataset_name = cfg.dataset_name
     img_size = cfg.img_size
     test_batch_size = cfg.test_batch_size
-
-    if dataset_name == 'mnist':
-        x, y = load_mnist(img_size, is_train=False)
-    elif dataset_name == 'cifar-10':
+    if dataset_name == 'cifar-10':
         x, y = load_cifar10(img_size, is_train=False)
     elif dataset_name == 'cifar-100':
         x, y = load_cifar100(img_size, is_train=False)
