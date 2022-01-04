@@ -4,7 +4,7 @@
 * [GAN](https://arxiv.org/pdf/1406.2661v1.pdf)
 * [DCGAN](https://arxiv.org/pdf/1511.06434v2.pdf)
 * [WassersteinGAN](https://arxiv.org/pdf/1701.07875v3.pdf)
-
+* [Improved Training of Wasserstein GANs](https://arxiv.org/pdf/1704.00028v3.pdf)
 ## 📃 ToDo List
 * [StyleGAN](https://arxiv.org/pdf/1812.04948v3.pdf)
 * [StarGAN](https://arxiv.org/pdf/1711.09020v3.pdf)
@@ -37,12 +37,27 @@
     ├── __init__.py
     ├── __pycache__
     │   ├── __init__.cpython-37.pyc
+    │   ├── losses.cpython-37.pyc
+    │   ├── optimizers.cpython-37.pyc
     │   └── utils.cpython-37.pyc
+    ├── losses.py
+    ├── optimizers.py
     └── utils.py
 ```
 
 
 ## 👨🏻‍💻 How to Train
+### DCGAN
 ```
 $ python main.py
+```
+
+### WGAN
+```
+$ python main.py --model_name="WGAN"
+```
+
+### WGAN-GP
+```
+$ python main.py --model_name="WGAN-GP"
 ```
